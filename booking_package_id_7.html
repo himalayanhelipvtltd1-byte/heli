@@ -1,0 +1,159 @@
+    <!doctype html>
+    <html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Booking - Trans Bharat Aviation</title>
+        <link rel="stylesheet" href="assets/css/style.css?v=1779644313">
+    </head>
+    <body>
+    <div class="page-shell">
+        <!-- <div class="date-strip"><span>Wednesday, July 1, 2026</span></div> -->
+        <header class="site-header">
+            <a class="brand" href="index.html">
+                <img class="header-logo-main header-logo-combined" src="assets/images/cropped-logo01.webp" alt="Trans Bharat Aviation">
+            </a>
+        </header>
+        <nav class="nav-bar">
+            <button class="site-menu-toggle" type="button" data-site-menu-toggle aria-label="Open menu" aria-expanded="false">
+                <svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/></svg>            </button>
+            <a class="" href="index.html"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 10 9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M9 20v-6h6v6"/></svg>Home</a>
+            <a class="" href="gallery.html"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>Gallery</a>
+            <a class="" href="verify.html"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Verify Booking</a>
+            <span class="nav-search"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>Search</span>
+        </nav>
+    <main class="booking-wrap screen-booking-wrap">
+    <section class="booking-head screen-booking-head">
+        <h1>Sersi to Kedarnath Yatra - One Way</h1>
+        <p>Fill your journey details, passenger information, and continue to payment in a clean booking flow.</p>
+    </section>
+
+    
+    <form method="post" class="booking-form screen-booking-form" data-passenger-form>
+        <input type="hidden" name="csrf_token" value="81d47e63e950a7d889898f0b9bd90f9f3acf14045fad1b9831fe7c5ef5257849">        <input type="hidden" name="package_id" value="7">
+
+        <div class="form-panel screen-form-panel">
+            <h2>Select Route</h2>
+            <label>Choose Your Yatra:
+                <select data-package-switch required>
+                                        <!--                         <optgroup label="Two Way Packages">
+                                                            <option value="8">Sersi to Kedarnath Yatra - Two Way</option>
+                                                    </optgroup>
+                                                                <optgroup label="One Way Packages">
+                                                            <option value="7" selected >Sersi to Kedarnath Yatra - One Way</option>
+                                                    </optgroup>
+                     -->
+                                                                    <option value="8">
+                            Sersi to Kedarnath Yatra - Two Way                        </option>
+                                                                    <option value="7" selected >
+                            Sersi to Kedarnath Yatra - One Way                        </option>
+                                    </select>
+            </label>
+        </div>
+
+        <div class="form-panel screen-form-panel">
+            <h2>Select Date of Journey</h2>
+            <label>Journey Date:
+                <input type="date" name="departure_date" value="" min="2026-07-01" data-departure-date data-duration-days="1" required>
+            </label>
+        </div>
+
+                    <div class="form-panel screen-form-panel">
+                <h2>Select Time Slot</h2>
+                <label>Time Slot:
+                    <select name="time_slot" required>
+                        <option value="">-- Select Time Slot --</option>
+                                                    <option value="06:00 AM - 09:00 AM" >06:00 AM - 09:00 AM</option>
+                                                    <option value="09:00 AM - 12:00 PM" >09:00 AM - 12:00 PM</option>
+                                                    <option value="12:00 PM - 03:00 AM" >12:00 PM - 03:00 AM</option>
+                                            </select>
+                </label>
+                <small>Select your preferred helicopter reporting slot.</small>
+            </div>
+        
+        
+        <div class="form-panel screen-form-panel">
+            <h2>Contact Information</h2>
+            <label>Email Address:
+                <input type="email" name="email" value="" maxlength="120" autocomplete="email" required>
+            </label>
+            <small>Email will be included in the final submitted data.</small>
+            <label>Mobile Number:
+                <input type="tel" name="mobile" value="" pattern="[6-9][0-9]{9}" maxlength="10" inputmode="numeric" autocomplete="tel" required>
+            </label>
+        </div>
+
+        <div class="form-panel screen-form-panel">
+            <h2>Traveller Details</h2>
+            <label>Number of Passengers (max 20):
+                <select name="passenger_count" data-passenger-count required>
+                                            <option value="1" selected>1</option>
+                                            <option value="2" >2</option>
+                                            <option value="3" >3</option>
+                                            <option value="4" >4</option>
+                                            <option value="5" >5</option>
+                                            <option value="6" >6</option>
+                                            <option value="7" >7</option>
+                                            <option value="8" >8</option>
+                                            <option value="9" >9</option>
+                                            <option value="10" >10</option>
+                                            <option value="11" >11</option>
+                                            <option value="12" >12</option>
+                                            <option value="13" >13</option>
+                                            <option value="14" >14</option>
+                                            <option value="15" >15</option>
+                                            <option value="16" >16</option>
+                                            <option value="17" >17</option>
+                                            <option value="18" >18</option>
+                                            <option value="19" >19</option>
+                                            <option value="20" >20</option>
+                                    </select>
+            </label>
+            <div data-passenger-container></div>
+        </div>
+
+        <div class="form-panel payment-summary screen-form-panel screen-payment-summary">
+            <h2>Payment Summary</h2>
+            <div class="summary-line">
+                <!-- <strong data-price="3043" data-price-label="Final Amount">Final Amount: ₹3,043 (₹3,043 x 1 passenger)</strong> -->
+                <button class="btn btn-blue" type="submit" data-book-button>Book 1 Seat</button>
+            </div>
+        </div>
+    </form>
+</main>
+        <footer class="site-footer">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <img src="assets/images/uttarakhand-logo-english.webp" alt="Uttarakhand">
+                    <strong>Trans Bharat Aviation</strong>
+                    <p>Government of Uttarakhand</p>
+                </div>
+                <div>
+                    <strong>Helpline Number</strong>
+                    <p>18005729848</p>
+                    <strong>Support Email</strong>
+                    <p>info@transbharataviation.com</p>
+                </div>
+                <div>
+                    <strong>Office Address</strong>
+                    <p>Sersi Village, NH 109, Kedarnath Road, Rudraprayag, Uttarakhand 246471.</p>
+                </div>
+                <div class="partner-badge">
+                    <div class="partner-icons">
+                        <img src="assets/images/ucada-1.webp" alt="UCADA">
+                        <img src="assets/images/cropped-logo_irctc-e1745573717658.webp" alt="IRCTC">
+                    </div>
+                    <span>In Partnership With</span>
+                </div>
+            </div>
+            <div class="copyright">Copyright (c) 2026 Trans Bharat Aviation.
+        </footer>
+    </div>
+    <button class="to-top" type="button" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="Back to top">
+        <svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m18 15-6-6-6 6"/></svg>
+    </button>
+    <script src="assets/js/app.js?v=1779644319"></script>
+    <script src="assets/js/mock-flow.js"></script>
+    </body>
+    </html>
+    

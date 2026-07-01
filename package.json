@@ -1,0 +1,24 @@
+{
+  "name": "irctc-heli-clone",
+  "private": true,
+  "scripts": {
+    "start": "node server/index.js",
+    "start:static": "npx --yes serve . -l 3000",
+    "test": "node scripts/test-api.js",
+    "mirror": "node mirror.js",
+    "vercel-build": "echo Vercel static + serverless API"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.49.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "multer": "^1.4.5-lts.1",
+    "nodemailer": "^6.10.0",
+    "pdf-lib": "^1.17.1",
+    "resend": "^4.1.2"
+  },
+  "devDependencies": {
+    "form-data": "^4.0.6"
+  }
+}
