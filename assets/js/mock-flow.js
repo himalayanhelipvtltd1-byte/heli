@@ -7,6 +7,7 @@
         accountNumber: '38408100014453',
         ifsc: 'BARB0FATWAH',
         bank: 'Bank of Baroda',
+        qrImage: 'assets/images/payment-qr.png',
     };
 
     const COMPANY_GST = '05AAACT0236C2Z2';
@@ -358,11 +359,20 @@
             <h1>Complete Your Payment</h1>
             <p>Secure your ${pkg.name} booking by completing the payment below.</p>
             <div class="pay-apps" aria-label="Supported UPI payment apps">
-                <span><img src="assets/images/payment-google-pay.svg" alt="Google Pay"></span>
-                <span><img src="assets/images/payment-phonepe.svg" alt="PhonePe"></span>
-                <span><img src="assets/images/payment-bhim-upi.svg" alt="BHIM UPI"></span>
-                <span><img src="assets/images/payment-paytm.svg" alt="Paytm"></span>
+                <button type="button" class="pay-app-btn" data-show-upi-qr="Google Pay" aria-label="Pay with Google Pay">
+                    <img src="assets/images/payment-google-pay.svg" alt="">
+                </button>
+                <button type="button" class="pay-app-btn" data-show-upi-qr="PhonePe" aria-label="Pay with PhonePe">
+                    <img src="assets/images/payment-phonepe.svg" alt="">
+                </button>
+                <button type="button" class="pay-app-btn" data-show-upi-qr="BHIM UPI" aria-label="Pay with BHIM UPI">
+                    <img src="assets/images/payment-bhim-upi.svg" alt="">
+                </button>
+                <button type="button" class="pay-app-btn" data-show-upi-qr="Paytm" aria-label="Pay with Paytm">
+                    <img src="assets/images/payment-paytm.svg" alt="">
+                </button>
             </div>
+            <p class="pay-apps-hint">Tap a payment app to view the UPI QR code.</p>
             <div class="payment-card">
                 <div class="card-heading">
                     <span>Secure Payment Details — Please transfer the booking amount to the company account mentioned below for booking confirmation.</span>
@@ -397,6 +407,54 @@
             <p>Total fare for ${pkg.name} booking</p>
         </aside>
     </section>`;
+        initPaymentPage(main, draft);
+    };
+
+    const showUpiQrModal = (appName, total) => {
+        const existing = document.querySelector('[data-upi-qr-modal]');
+        existing?.remove();
+
+        const backdrop = document.createElement('div');
+        backdrop.className = 'modal-backdrop active';
+        backdrop.setAttribute('data-upi-qr-modal', '');
+        backdrop.innerHTML = `
+            <div class="modal payment-qr-modal" role="dialog" aria-modal="true" aria-label="UPI QR code">
+                <button class="modal-close" type="button" data-dismiss-modal aria-label="Close">
+                    <svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                </button>
+                <h2 style="margin:0 0 8px">Pay with ${appName}</h2>
+                <p style="margin:0 0 16px;color:#64748b">Scan this QR to pay <strong>${fmtInr(total)}</strong></p>
+                <img class="qr-image" src="${PAYMENT_DETAILS.qrImage}" alt="UPI payment QR code" data-qr-image>
+                <p class="qr-fallback" data-qr-fallback hidden>QR image missing. Save your QR as <code>assets/images/payment-qr.png</code></p>
+                <p style="margin:12px 0 0;font-size:13px;color:#64748b">You can also transfer using the bank details on this page.</p>
+                <div class="modal-actions">
+                    <button class="btn btn-light" type="button" data-dismiss-modal>Close</button>
+                </div>
+            </div>`;
+        document.body.appendChild(backdrop);
+
+        backdrop.querySelector('[data-qr-image]')?.addEventListener('error', () => {
+            const img = backdrop.querySelector('[data-qr-image]');
+            const fallback = backdrop.querySelector('[data-qr-fallback]');
+            if (img) img.style.display = 'none';
+            if (fallback) fallback.hidden = false;
+        });
+
+        const close = () => backdrop.remove();
+        backdrop.querySelectorAll('[data-dismiss-modal]').forEach((el) => {
+            el.addEventListener('click', close);
+        });
+        backdrop.addEventListener('click', (event) => {
+            if (event.target === backdrop) close();
+        });
+    };
+
+    const initPaymentPage = (main, draft) => {
+        main.querySelectorAll('[data-show-upi-qr]').forEach((button) => {
+            button.addEventListener('click', () => {
+                showUpiQrModal(button.getAttribute('data-show-upi-qr') || 'UPI', draft.total);
+            });
+        });
     };
 
     const downloadTicketPdf = async (draft) => {

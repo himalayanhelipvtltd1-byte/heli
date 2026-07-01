@@ -89,20 +89,40 @@
         }
     });
 
-    document.querySelectorAll('[data-copy]').forEach((button) => {
-        button.addEventListener('click', async () => {
-            const value = button.dataset.copy || '';
+    document.addEventListener('click', async (event) => {
+        const button = event.target.closest('[data-copy]');
+        if (!button) return;
+        const value = button.dataset.copy || '';
+        const original = button.innerHTML;
+        const copied = await (async () => {
             try {
                 await navigator.clipboard.writeText(value);
-                const original = button.innerHTML;
-                button.textContent = 'Copied';
-                setTimeout(() => {
-                    button.innerHTML = original;
-                }, 1200);
-            } catch (error) {
-                window.prompt('Copy this value', value);
+                return true;
+            } catch {
+                try {
+                    const ta = document.createElement('textarea');
+                    ta.value = value;
+                    ta.setAttribute('readonly', '');
+                    ta.style.position = 'fixed';
+                    ta.style.left = '-9999px';
+                    document.body.appendChild(ta);
+                    ta.select();
+                    const ok = document.execCommand('copy');
+                    ta.remove();
+                    return ok;
+                } catch {
+                    return false;
+                }
             }
-        });
+        })();
+        if (copied) {
+            button.textContent = 'Copied';
+            setTimeout(() => {
+                button.innerHTML = original;
+            }, 1200);
+        } else {
+            window.prompt('Copy this value', value);
+        }
     });
 
     document.querySelectorAll('[data-rich-mail-form]').forEach((form) => {
