@@ -335,15 +335,18 @@
         link.addEventListener('click', () => setSiteMenuOpen(false));
     });
 
+    const adminShell = document.querySelector('[data-admin-shell]');
     const adminMenuToggle = document.querySelector('[data-admin-menu-toggle]');
     const adminMenuCloseTargets = document.querySelectorAll('[data-admin-menu-close], .admin-menu a, .admin-logout');
     const setAdminMenuOpen = (open) => {
-        document.body.classList.toggle('admin-menu-open', open);
+        if (adminShell) {
+            adminShell.classList.toggle('admin-menu-open', open);
+        }
         adminMenuToggle?.setAttribute('aria-expanded', open ? 'true' : 'false');
     };
 
     adminMenuToggle?.addEventListener('click', () => {
-        setAdminMenuOpen(!document.body.classList.contains('admin-menu-open'));
+        setAdminMenuOpen(!adminShell?.classList.contains('admin-menu-open'));
     });
 
     adminMenuCloseTargets.forEach((target) => {
