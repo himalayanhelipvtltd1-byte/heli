@@ -2493,13 +2493,13 @@ td {
 .admin-body {
     display: grid;
     grid-template-columns: 280px 1fr;
-    min-height: 100vh;
+    height: 100vh;
+    overflow: hidden;
     background: #eef3fb;
 }
 
 .admin-sidebar {
-    position: sticky;
-    top: 0;
+    position: relative;
     z-index: 35;
     height: 100vh;
     display: flex;
@@ -2507,6 +2507,8 @@ td {
     background: linear-gradient(180deg, #111827, #16283f);
     color: #fff;
     padding: 22px 16px;
+    overflow: hidden;
+    border-right: 1px solid rgba(255, 255, 255, .08);
 }
 
 .admin-brand {
@@ -2613,7 +2615,38 @@ td {
 .admin-main {
     padding: 28px;
     min-width: 0;
+    height: 100vh;
+    overflow-y: auto;
     overflow-x: hidden;
+}
+
+.admin-bookings-card {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.admin-bookings-toolbar {
+    margin-bottom: 14px;
+    flex: 0 0 auto;
+}
+
+.admin-bookings-scroll {
+    flex: 1 1 auto;
+    min-height: 280px;
+    max-height: min(62vh, 720px);
+    overflow: auto;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: #fff;
+}
+
+.admin-bookings-scroll .admin-table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background: #f8fafc;
+    box-shadow: inset 0 -1px 0 var(--line);
 }
 
 .admin-topbar {
@@ -3206,10 +3239,14 @@ td {
 
     .admin-body {
         grid-template-columns: 1fr;
+        height: auto;
+        min-height: 100vh;
+        overflow: visible;
     }
 
     .admin-body.admin-menu-open {
         overflow: hidden;
+        height: 100vh;
     }
 
     .admin-sidebar {
@@ -3222,6 +3259,16 @@ td {
         box-shadow: 18px 0 45px rgba(15, 23, 42, .28);
         padding: 18px 16px;
         overflow-y: auto;
+    }
+
+    .admin-main {
+        height: auto;
+        min-height: 100vh;
+        overflow: visible;
+    }
+
+    .admin-bookings-scroll {
+        max-height: none;
     }
 
     .admin-body.admin-menu-open .admin-sidebar {
