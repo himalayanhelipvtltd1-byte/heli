@@ -22,7 +22,6 @@
     const qrEmpty = document.querySelector('[data-payment-qr-empty]');
     const adminTitle = document.querySelector('[data-admin-title]');
     const refreshBtn = document.querySelector('[data-admin-refresh]');
-    const adminUrlHint = document.querySelector('[data-admin-url-hint]');
 
     let screenshotObjectUrl = null;
 
@@ -40,16 +39,6 @@
             /* ignore */
         }
         return '';
-    };
-
-    const updateAdminUrlHint = async () => {
-        if (!adminUrlHint) return;
-        const origin = await getSiteOrigin();
-        if (origin) {
-            adminUrlHint.innerHTML = `Open <strong>${origin}/admin.html</strong> on your live site.`;
-        } else {
-            adminUrlHint.textContent = 'Run npm start and open /admin.html on your server (not the HTML file directly).';
-        }
     };
 
     const getToken = () => sessionStorage.getItem(TOKEN_KEY) || '';
@@ -417,7 +406,6 @@
     });
 
     const boot = async () => {
-        await updateAdminUrlHint();
         if (!getToken()) {
             showLogin();
             return;
