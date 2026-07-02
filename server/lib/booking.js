@@ -1,8 +1,55 @@
 const crypto = require('crypto');
 const { getPackage } = require('./packages');
+const { supabase } = require('./supabase');
+
+const BOOKING_ID_MIN = 1_000_000_000;
+const BOOKING_ID_MAX = 10_000_000_000;
 
 function generateBookingId() {
-  return String(Math.floor(1000000000 + Math.random() * 9000000000));
+  return String(crypto.randomInt(BOOKING_ID_MIN, BOOKING_ID_MAX));
+}
+
+function isValidBookingId(value) {
+  return /^\d{10}$/.test(String(value || ''));
+}
+
+function isDuplicateBookingIdError(error) {
+  if (!error) return false;
+  if (String(error.code || '') !== '23505') return false;
+  const text = [
+    error.message,
+    error.details,
+    error.hint,
+    error.constraint,
+  ].filter(Boolean).join(' ').toLowerCase();
+  return text.includes('booking_id') || text.includes('bookings_booking_id');
+}
+
+async function insertBookingWithUniqueId(row, maxAttempts = 10) {
+  if (!supabase) throw new Error('Database not configured');
+
+  let payload = { ...row, booking_id: generateBookingId() };
+
+  for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
+    if (attempt > 0) {
+      payload = { ...payload, booking_id: generateBookingId() };
+    }
+
+    if (!isValidBookingId(payload.booking_id)) {
+      throw new Error('Invalid booking ID generated');
+    }
+
+    const { data, error } = await supabase
+      .from('bookings')
+      .insert(payload)
+      .select('*')
+      .single();
+
+    if (!error) return data;
+    if (!isDuplicateBookingIdError(error)) throw error;
+  }
+
+  throw new Error('Could not generate a unique booking ID. Please try again.');
 }
 
 function generateToken() {
@@ -41,6 +88,21 @@ function formatBookedAt(iso) {
   return `${pad(d.getDate())}-${pad(d.getMonth() + 1)}-${d.getFullYear()} ${pad(h12)}:${pad(d.getMinutes())} ${ampm}`;
 }
 
+function normalizeMobile(value) {
+  return String(value || '').replace(/\D/g, '');
+}
+
+function mobileMatches(stored, provided) {
+  const a = normalizeMobile(stored);
+  const b = normalizeMobile(provided);
+  if (!a || !b) return false;
+  if (a === b) return true;
+  if (a.length >= 10 && b.length >= 10) {
+    return a.slice(-10) === b.slice(-10);
+  }
+  return false;
+}
+
 function validatePassengers(passengers, count) {
   if (!Array.isArray(passengers) || passengers.length !== count) {
     throw new Error('Passenger count does not match passenger details');
@@ -71,8 +133,8 @@ function buildBookingRow(body) {
 
   const total = pkg.total * passengerCount;
 
+  // Public booking_id is always generated server-side — never taken from the client.
   return {
-    booking_id: generateBookingId(),
     access_token: generateToken(),
     package_id: packageId,
     package_name: pkg.name,
@@ -90,9 +152,16 @@ function buildBookingRow(body) {
 }
 
 module.exports = {
+  BOOKING_ID_MIN,
+  BOOKING_ID_MAX,
   generateBookingId,
   generateToken,
+  isValidBookingId,
+  isDuplicateBookingIdError,
+  insertBookingWithUniqueId,
   rowToDraft,
   buildBookingRow,
   formatBookedAt,
+  normalizeMobile,
+  mobileMatches,
 };

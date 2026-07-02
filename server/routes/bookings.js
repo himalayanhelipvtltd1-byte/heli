@@ -3,7 +3,7 @@ const multer = require('multer');
 const path = require('path');
 const { supabase, SCREENSHOT_BUCKET } = require('../lib/supabase');
 const { getPackage } = require('../lib/packages');
-const { buildBookingRow, rowToDraft } = require('../lib/booking');
+const { buildBookingRow, rowToDraft, insertBookingWithUniqueId, mobileMatches } = require('../lib/booking');
 const { sendBookingConfirmation } = require('../lib/email');
 const { generateTicketPdf } = require('../lib/ticket-pdf');
 
@@ -45,12 +45,7 @@ function getToken(req) {
 router.post('/', requireSupabase, async (req, res) => {
   try {
     const row = buildBookingRow(req.body);
-    const { data, error } = await supabase
-      .from('bookings')
-      .insert(row)
-      .select('*')
-      .single();
-    if (error) throw error;
+    const data = await insertBookingWithUniqueId(row);
 
     const draft = rowToDraft(data);
     res.status(201).json({
@@ -72,10 +67,20 @@ router.get('/packages/:id', (req, res) => {
   res.json({ package: pkg });
 });
 
+function getVerifyMobile(req) {
+  return req.query.mobile || req.body?.mobile || '';
+}
+
+function canVerifyBooking(booking, mobile) {
+  if (!booking || booking.status !== 'confirmed') return false;
+  if (!mobileMatches(booking.mobile, mobile)) return false;
+  return true;
+}
+
 router.get('/verify/:bookingId', requireSupabase, async (req, res) => {
   try {
     const booking = await findByBookingId(req.params.bookingId);
-    if (!booking || booking.status !== 'confirmed') {
+    if (!canVerifyBooking(booking, getVerifyMobile(req))) {
       res.status(404).json({ error: 'Booking not found or not confirmed' });
       return;
     }
@@ -88,7 +93,7 @@ router.get('/verify/:bookingId', requireSupabase, async (req, res) => {
 router.get('/verify/:bookingId/ticket.pdf', requireSupabase, async (req, res) => {
   try {
     const booking = await findByBookingId(req.params.bookingId);
-    if (!booking || booking.status !== 'confirmed') {
+    if (!canVerifyBooking(booking, getVerifyMobile(req))) {
       res.status(404).json({ error: 'Ticket not available' });
       return;
     }

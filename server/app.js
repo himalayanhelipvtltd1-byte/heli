@@ -6,6 +6,9 @@ const express = require('express');
 const cors = require('cors');
 const bookingsRouter = require('./routes/bookings');
 const ticketsRouter = require('./routes/tickets');
+const paymentDetailsRouter = require('./routes/payment-details');
+const adminRouter = require('./routes/admin');
+const { getAppUrl } = require('./lib/app-url');
 
 const rootDir = path.join(__dirname, '..');
 
@@ -17,6 +20,7 @@ app.use(express.json({ limit: '1mb' }));
 app.get('/api/health', (_req, res) => {
   res.json({
     ok: true,
+    appUrl: getAppUrl(),
     supabase: Boolean(process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY),
     email: Boolean(
       process.env.RESEND_API_KEY
@@ -25,8 +29,16 @@ app.get('/api/health', (_req, res) => {
   });
 });
 
+app.get('/api/config', (_req, res) => {
+  res.json({
+    appUrl: getAppUrl(),
+  });
+});
+
 app.use('/api/bookings', bookingsRouter);
 app.use('/api/tickets', ticketsRouter);
+app.use('/api/payment-details', paymentDetailsRouter);
+app.use('/api/admin', adminRouter);
 
 // /booking_summary → booking_summary.html
 app.use((req, res, next) => {

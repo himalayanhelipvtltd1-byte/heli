@@ -78,6 +78,7 @@ async function main() {
     bookingId = data.bookingId || data.draft?.bookingId;
     token = data.token || data.draft?.token;
     if (!bookingId || !token) throw new Error('Missing bookingId or token in response');
+    if (!/^\d{10}$/.test(String(bookingId))) throw new Error(`Invalid booking ID format: ${bookingId}`);
     pass('Create booking', `ID ${bookingId}`);
   } catch (e) {
     fail('Create booking', e.message);
@@ -100,13 +101,60 @@ async function main() {
     fail('Fetch booking by token', e.message);
   }
 
+  // 3b. Second booking gets a different ID
+  try {
+    const body = {
+      packageId: '9',
+      departureDate: '2026-08-11',
+      timeSlot: '06:00 AM - 09:00 AM',
+      email: 'supabase-test-2@example.com',
+      mobile: '9876543211',
+      passengerCount: 1,
+      passengers: [{
+        name: 'Duplicate Check',
+        gender: 'Female',
+        age: '30',
+        aadhaar: '123456789013',
+        registration: 'YATRA-TEST-02',
+      }],
+    };
+    const { res, data } = await jsonFetch(`${BASE}/api/bookings`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+    const secondId = data.bookingId || data.draft?.bookingId;
+    if (!secondId || secondId === bookingId) {
+      throw new Error(`Expected a new unique booking ID, got ${secondId}`);
+    }
+    pass('Unique booking IDs', `${bookingId} ≠ ${secondId}`);
+  } catch (e) {
+    fail('Unique booking IDs', e.message);
+  }
+
+  const testMobile = '9876543210';
+
   // 4. Verify before confirm (should fail)
   try {
-    const { res } = await jsonFetch(`${BASE}/api/bookings/verify/${bookingId}`);
+    const { res } = await jsonFetch(
+      `${BASE}/api/bookings/verify/${bookingId}?mobile=${encodeURIComponent(testMobile)}`,
+    );
     if (res.status === 404) pass('Verify pending booking returns 404 (expected)');
     else fail('Verify pending booking', `expected 404, got ${res.status}`);
   } catch (e) {
     fail('Verify pending booking', e.message);
+  }
+
+  // 4b. Wrong mobile should fail even if booking exists
+  try {
+    const { res } = await jsonFetch(
+      `${BASE}/api/bookings/verify/${bookingId}?mobile=0000000000`,
+    );
+    if (res.status === 404) pass('Verify rejects wrong mobile (expected)');
+    else fail('Verify rejects wrong mobile', `expected 404, got ${res.status}`);
+  } catch (e) {
+    fail('Verify rejects wrong mobile', e.message);
   }
 
   // 5. Confirm with screenshot upload (PDF is an allowed MIME type)
@@ -169,12 +217,23 @@ async function main() {
 
   // 6. Verify after confirm
   try {
-    const { res, data } = await jsonFetch(`${BASE}/api/bookings/verify/${bookingId}`);
+    const { res, data } = await jsonFetch(
+      `${BASE}/api/bookings/verify/${bookingId}?mobile=${encodeURIComponent(testMobile)}`,
+    );
     if (!res.ok) throw new Error(data.error || res.status);
     if (data.draft?.confirmed) pass('Verify confirmed booking', data.draft.packageName);
     else fail('Verify confirmed booking', 'not confirmed');
   } catch (e) {
     fail('Verify confirmed booking', e.message);
+  }
+
+  // 6b. Verify ticket PDF requires mobile
+  try {
+    const badRes = await fetch(`${BASE}/api/bookings/verify/${bookingId}/ticket.pdf`);
+    if (badRes.status === 404) pass('Verify ticket PDF requires mobile');
+    else fail('Verify ticket PDF requires mobile', `expected 404, got ${badRes.status}`);
+  } catch (e) {
+    fail('Verify ticket PDF requires mobile', e.message);
   }
 
   // 7. Ticket PDF

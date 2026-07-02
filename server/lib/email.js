@@ -1,9 +1,9 @@
 const nodemailer = require('nodemailer');
 const { generateTicketPdf } = require('./ticket-pdf');
+const { appUrl } = require('./app-url');
 
 const FROM_EMAIL = process.env.FROM_EMAIL || 'info@transbharataviation.com';
 const FROM_NAME = process.env.FROM_NAME || 'Trans Bharat Aviation';
-const APP_URL = process.env.APP_URL || 'http://localhost:3000';
 
 let resendClient = null;
 
@@ -67,9 +67,9 @@ function buildHtml(booking) {
     <tbody>${passengerList}</tbody>
   </table>
   <p style="margin-top:20px">
-    <a href="${APP_URL}/ticket.html" style="background:#dc2626;color:#fff;padding:10px 18px;text-decoration:none;border-radius:6px;display:inline-block">View Ticket</a>
+    <a href="${appUrl('/ticket.html')}" style="background:#dc2626;color:#fff;padding:10px 18px;text-decoration:none;border-radius:6px;display:inline-block">View Ticket</a>
     &nbsp;
-    <a href="${APP_URL}/verify.html" style="color:#2563eb">Verify booking anytime</a>
+    <a href="${appUrl('/verify.html')}" style="color:#2563eb">Verify booking anytime</a>
   </p>
   <p style="font-size:13px;color:#64748b;margin-top:24px">
     Carry original ID proofs and report at the helipad at least 2 hours before departure.

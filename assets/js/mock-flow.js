@@ -1,7 +1,7 @@
 (function () {
     const STORAGE_KEY = 'heliBookingDraft';
 
-    const PAYMENT_DETAILS = {
+    const DEFAULT_PAYMENT_DETAILS = {
         merchant: 'Trans Bharat Aviation',
         manager: 'Raja Kumar',
         accountNumber: '38408100014453',
@@ -9,6 +9,7 @@
         bank: 'Bank of Baroda',
         qrImage: 'assets/images/payment-qr.png',
     };
+    let paymentDetails = { ...DEFAULT_PAYMENT_DETAILS };
 
     const COMPANY_GST = '05AAACT0236C2Z2';
     const COMPANY_NAME = 'Trans Bharat Aviation';
@@ -172,6 +173,15 @@
         const [y, m, d] = iso.split('-');
         return `${d}-${m}-${y}`;
     };
+    const normalizeMobile = (value) => String(value || '').replace(/\D/g, '');
+    const mobileMatches = (stored, provided) => {
+        const a = normalizeMobile(stored);
+        const b = normalizeMobile(provided);
+        if (!a || !b) return false;
+        if (a === b) return true;
+        if (a.length >= 10 && b.length >= 10) return a.slice(-10) === b.slice(-10);
+        return false;
+    };
     const bookingTimestamp = () => {
         const now = new Date();
         const pad = (n) => String(n).padStart(2, '0');
@@ -253,9 +263,14 @@
             passengers,
             total: pkg.total * count,
             pkg,
-            bookingId: String(Math.floor(1000000000 + Math.random() * 9000000000)),
-            token: Math.random().toString(36).slice(2) + Date.now().toString(36),
         };
+    };
+
+    const assignOfflineBookingCredentials = (draft) => {
+        draft.bookingId = String(Math.floor(1000000000 + Math.random() * 9000000000));
+        draft.token = Math.random().toString(36).slice(2) + Date.now().toString(36);
+        draft.offlineOnly = true;
+        return draft;
     };
 
     const passengerRows = (passengers) => passengers.map((p) => `
@@ -347,6 +362,18 @@
     </section>`;
     };
 
+    const loadPaymentDetails = async () => {
+        if (!(await checkApi())) return { ...DEFAULT_PAYMENT_DETAILS };
+        try {
+            const res = await fetch(apiUrl('/api/payment-details'));
+            if (!res.ok) return { ...DEFAULT_PAYMENT_DETAILS };
+            const data = await res.json();
+            return { ...DEFAULT_PAYMENT_DETAILS, ...data };
+        } catch {
+            return { ...DEFAULT_PAYMENT_DETAILS };
+        }
+    };
+
     const renderPayment = (draft) => {
         const { pkg, total } = draft;
         document.title = 'Payment - Trans Bharat Aviation';
@@ -379,11 +406,11 @@
                 </div>
                 <br>
                 <div class="merchant-grid">
-                    <div class="copy-tile"><span>Merchant Name</span><strong>${PAYMENT_DETAILS.merchant}</strong><button type="button" data-copy="${PAYMENT_DETAILS.merchant}"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><rect x="2" y="2" width="13" height="13" rx="2"/></svg>Copy</button></div>
-                    <div class="copy-tile"><span>Booking Manager</span><strong>${PAYMENT_DETAILS.manager}</strong><button type="button" data-copy="${PAYMENT_DETAILS.manager}"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><rect x="2" y="2" width="13" height="13" rx="2"/></svg>Copy</button></div>
-                    <div class="copy-tile"><span>Account Number</span><strong>${PAYMENT_DETAILS.accountNumber}</strong><button type="button" data-copy="${PAYMENT_DETAILS.accountNumber}"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><rect x="2" y="2" width="13" height="13" rx="2"/></svg>Copy</button></div>
-                    <div class="copy-tile"><span>IFSC</span><strong>${PAYMENT_DETAILS.ifsc}</strong><button type="button" data-copy="${PAYMENT_DETAILS.ifsc}"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><rect x="2" y="2" width="13" height="13" rx="2"/></svg>Copy</button></div>
-                    <div class="copy-tile"><span>Bank</span><strong>${PAYMENT_DETAILS.bank}</strong><button type="button" data-copy="${PAYMENT_DETAILS.bank}"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><rect x="2" y="2" width="13" height="13" rx="2"/></svg>Copy</button></div>
+                    <div class="copy-tile"><span>Merchant Name</span><strong>${paymentDetails.merchant}</strong><button type="button" data-copy="${paymentDetails.merchant}"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><rect x="2" y="2" width="13" height="13" rx="2"/></svg>Copy</button></div>
+                    <div class="copy-tile"><span>Booking Manager</span><strong>${paymentDetails.manager}</strong><button type="button" data-copy="${paymentDetails.manager}"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><rect x="2" y="2" width="13" height="13" rx="2"/></svg>Copy</button></div>
+                    <div class="copy-tile"><span>Account Number</span><strong>${paymentDetails.accountNumber}</strong><button type="button" data-copy="${paymentDetails.accountNumber}"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><rect x="2" y="2" width="13" height="13" rx="2"/></svg>Copy</button></div>
+                    <div class="copy-tile"><span>IFSC</span><strong>${paymentDetails.ifsc}</strong><button type="button" data-copy="${paymentDetails.ifsc}"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><rect x="2" y="2" width="13" height="13" rx="2"/></svg>Copy</button></div>
+                    <div class="copy-tile"><span>Bank</span><strong>${paymentDetails.bank}</strong><button type="button" data-copy="${paymentDetails.bank}"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><rect x="2" y="2" width="13" height="13" rx="2"/></svg>Copy</button></div>
                 </div>
             </div>
             <form class="payment-card confirm-card" method="post" enctype="multipart/form-data" data-mock-payment-form>
@@ -424,7 +451,7 @@
                 </button>
                 <h2 style="margin:0 0 8px">Pay with ${appName}</h2>
                 <p style="margin:0 0 16px;color:#64748b">Scan this QR to pay <strong>${fmtInr(total)}</strong></p>
-                <img class="qr-image" src="${PAYMENT_DETAILS.qrImage}" alt="UPI payment QR code" data-qr-image>
+                <img class="qr-image" src="${paymentDetails.qrImage}" alt="UPI payment QR code" data-qr-image>
                 <p class="qr-fallback" data-qr-fallback hidden>QR image missing. Save your QR as <code>assets/images/payment-qr.png</code></p>
                 <p style="margin:12px 0 0;font-size:13px;color:#64748b">You can also transfer using the bank details on this page.</p>
                 <div class="modal-actions">
@@ -484,10 +511,10 @@
             }
         }
 
-        if (hydrated.bookingId && hydrated.confirmed) {
+        if (hydrated.bookingId && hydrated.verifyMobile) {
             try {
                 const res = await fetch(
-                    apiUrl(`/api/bookings/verify/${encodeURIComponent(hydrated.bookingId)}/ticket.pdf`),
+                    apiUrl(`/api/bookings/verify/${encodeURIComponent(hydrated.bookingId)}/ticket.pdf?mobile=${encodeURIComponent(hydrated.verifyMobile)}`),
                 );
                 if (res.ok) {
                     saveBlob(await res.blob());
@@ -653,31 +680,42 @@
         }
     };
 
-    const renderVerify = async (code) => {
+    const renderVerify = async (code, mobile) => {
         const main = document.querySelector('.verify-check-form')?.closest('main');
         if (!main) return;
 
+        const mobileValue = String(mobile || '').trim();
         let draft = null;
         if (await checkApi()) {
             try {
-                const data = await apiFetch(`/api/bookings/verify/${encodeURIComponent(code)}`);
+                const data = await apiFetch(
+                    `/api/bookings/verify/${encodeURIComponent(code)}?mobile=${encodeURIComponent(mobileValue)}`,
+                );
                 draft = data.draft;
             } catch {
                 draft = null;
             }
         } else {
             draft = readDraft();
-            if (!draft || String(draft.bookingId) !== String(code)) draft = null;
+            if (
+                !draft
+                || String(draft.bookingId) !== String(code)
+                || !mobileMatches(draft.mobile, mobileValue)
+            ) {
+                draft = null;
+            }
         }
         if (!draft) {
             const form = main.querySelector('.verify-check-form');
             const err = document.createElement('p');
             err.className = 'alert';
             err.style.marginTop = '16px';
-            err.textContent = 'Booking not found or not confirmed. Check your 10-digit booking ID.';
+            err.textContent = 'Booking not found. Check your 10-digit booking ID and registered mobile number.';
             main.querySelector('.verify-error')?.remove();
+            main.querySelector('.verify-paid-result')?.remove();
             err.classList.add('verify-error');
             form?.insertAdjacentElement('afterend', err);
+            if (form) form.style.display = '';
             return;
         }
 
@@ -686,6 +724,8 @@
             <tr><td>${p.name}</td><td>${p.gender}</td><td>${p.age}</td><td>${p.registration}</td></tr>`).join('');
         const form = main.querySelector('.verify-check-form');
         if (form) form.style.display = 'none';
+        main.querySelector('.verify-error')?.remove();
+        main.querySelector('.verify-paid-result')?.remove();
         const result = document.createElement('div');
         result.className = 'verify-paid-result';
         result.innerHTML = `
@@ -695,6 +735,7 @@
         </div>
         <div class="verify-paid-meta">
             <p>Booking ID <strong>${code || draft.bookingId}</strong></p>
+            <p>Mobile <strong>${draft.mobile}</strong></p>
             <p>Package <strong>${draft.packageName}</strong></p>
             <p>Journey <strong>${fmtDate(draft.departureDate)} · ${draft.timeSlot}</strong></p>
         </div>
@@ -710,14 +751,15 @@
             <button class="btn btn-blue" type="button" data-download-ticket>Download Ticket</button>
         </div>`;
         main.appendChild(result);
-        result.querySelector('[data-download-ticket]')?.addEventListener('click', () => downloadTicketPdf(draft));
+        result.querySelector('[data-download-ticket]')?.addEventListener('click', () => {
+            downloadTicketPdf({ ...draft, verifyMobile: mobileValue });
+        });
     };
 
     document.querySelectorAll('[data-passenger-form]').forEach((form) => {
         form.addEventListener('submit', async (event) => {
             event.preventDefault();
             const draft = formToDraft(form);
-            saveDraft(draft);
 
             if (await checkApi()) {
                 try {
@@ -736,12 +778,17 @@
                             passengers: draft.passengers,
                         }),
                     });
-                    if (data.draft) {
-                        saveDraft({ ...draft, ...data.draft, pkg: draft.pkg });
+                    if (!data.draft?.bookingId || !data.draft?.token) {
+                        throw new Error('Booking was not saved. Please try again.');
                     }
+                    saveDraft({ ...draft, ...data.draft, pkg: draft.pkg });
                 } catch (err) {
-                    console.warn('API booking save failed, continuing with local draft:', err.message);
+                    alert(err.message || 'Could not save booking. Please try again.');
+                    return;
                 }
+            } else {
+                assignOfflineBookingCredentials(draft);
+                saveDraft(draft);
             }
 
             window.location.href = '/booking_summary.html';
@@ -798,8 +845,10 @@
         }
         if (form.matches('.verify-check-form')) {
             event.preventDefault();
-            const code = new FormData(form).get('booking_code');
-            await renderVerify(String(code || ''));
+            const fd = new FormData(form);
+            const code = fd.get('booking_code');
+            const mobile = fd.get('mobile');
+            await renderVerify(String(code || ''), String(mobile || ''));
         }
     });
 
@@ -823,6 +872,7 @@
             if (!draft) {
                 window.location.href = 'index.html';
             } else {
+                paymentDetails = await loadPaymentDetails();
                 renderPayment(draft);
             }
         }

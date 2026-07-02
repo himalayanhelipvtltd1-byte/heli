@@ -31,7 +31,10 @@
 
     <form class="verify-check-form" method="post">
         <input type="hidden" name="csrf_token" value="a7a2496d3bfa0d4b7df6297ae85d759a2a0fc965da74e02e0ac93034e34a21d0">        <label>Booking ID
-            <input name="booking_code" value="" placeholder="" pattern="[0-9]{10}" maxlength="10" inputmode="numeric" required>
+            <input name="booking_code" value="" placeholder="10-digit booking ID" pattern="[0-9]{10}" maxlength="10" inputmode="numeric" required>
+        </label>
+        <label>Mobile Number
+            <input name="mobile" value="" placeholder="Registered mobile number" pattern="[0-9+\s-]{10,15}" minlength="10" maxlength="15" inputmode="tel" autocomplete="tel" required>
         </label>
         <button type="submit">SUBMIT</button>
     </form>
